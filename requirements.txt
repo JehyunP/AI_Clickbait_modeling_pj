@@ -1,0 +1,16 @@
+# --- Crawling ---
+requests
+beautifulsoup4
+selenium
+
+# --- Data handling ---
+pandas
+numpy
+
+# Embedding
+sentence-transformers
+transformers
+torch --index-url https://download.pytorch.org/whl/cpu
+
+# ML/DL
+tensorflow-cpu

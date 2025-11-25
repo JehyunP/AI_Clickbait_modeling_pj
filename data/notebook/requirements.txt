@@ -1,0 +1,19 @@
+# Crawling Modules
+requests
+beautifulsoup4
+selenium
+
+# Data Modification
+pandas
+numpy
+datasets
+
+# Visualization
+matplotlib
+
+# ML / DL
+scikit-learn
+xgboost
+lightgbm
+torch
+tensorflow
