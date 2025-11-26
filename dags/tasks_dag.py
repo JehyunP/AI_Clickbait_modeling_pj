@@ -9,6 +9,7 @@ from utils.s3 import S3
 import utils.embed as embed
 from utils.web_scrapping import WebScrapper
 from utils.newsClassifier import NewsClassifier
+from utils.snowflake_utils import SnowFlakeLoader
 
 
 def ngetnews_to_s3(**context):
@@ -71,6 +72,20 @@ def applying_model(**context):
     logging.info("Loading post modeled parquet into S3/post_model")
     _s3.load_parquet(df, True)
 
+    
+def load_into_snowflake(**context):
+    """
+        Copy into Snowflake table
+    """
+
+    dt = context['execution_date']
+
+    logging.info("Create and copy to Snowflake")
+
+    _snowflake = SnowFlakeLoader(dt)
+    _snowflake.copy_news_from_s3()
+    _snowflake.merge_from_s3()
+
 
 # DAG Init
 
@@ -121,9 +136,17 @@ with DAG(
 
         [modeling]
 
+
+    # Copying into Snowflake
+    with TaskGroup('toSnowflake') as toSnowflake:
+        copying = PythonOperator(
+            task_id = "Copying_into_Snowflake",
+            python_callable = load_into_snowflake
+        )
+
     # Empty Operator to announce Dag just ended
     end = EmptyOperator(task_id = 'end')
 
 
     #Dependencies 
-    start >> crawling >> preprocessing >> modeled >> end
+    start >> crawling >> preprocessing >> modeled >> toSnowflake >> end
