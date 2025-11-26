@@ -29,6 +29,38 @@ def ngetnews_to_s3(**context):
     _s3.load_json(data_set, "nget")
 
 
+def sisanews_to_s3(**context):
+    """
+        Scrapping sisa news then load into S3 as Json
+    """
+    dt = context['execution_date']
+
+    logging.info("Initiate Scrapping sisa news page")
+
+    crawler = WebScrapper()
+    data_set = crawler.get_sisanews()
+
+    _s3 = S3(dt)
+    logging.info("Loading in progress")
+    _s3.load_json(data_set, "sisa")
+
+
+def ynanews_to_s3(**context):
+    """
+        Scrapping yna news then load into S3 as Json
+    """
+    dt = context['execution_date']
+
+    logging.info("Initiate Scrapping yna news page")
+
+    crawler = WebScrapper()
+    data_set = crawler.get_ynanews()
+
+    _s3 = S3(dt)
+    logging.info("Loading in progress")
+    _s3.load_json(data_set, "yna")    
+
+
 def s3_embed_s3(**context):
     """
         Read all json files then return merged json within execute day
@@ -113,8 +145,18 @@ with DAG(
             python_callable = ngetnews_to_s3,
         )
 
+        sisa = PythonOperator(
+            task_id = 'sisa_news_crawl',
+            python_callable = sisanews_to_s3,
+        )
 
-        [nget]
+        yna = PythonOperator(
+            task_id = 'yna_news_crawl',
+            python_callable = ynanews_to_s3
+        )
+
+
+        [nget, sisa, yna]
 
 
     # Cleaning and Scaled by Bert_embeded

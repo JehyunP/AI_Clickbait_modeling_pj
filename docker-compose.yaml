@@ -162,8 +162,10 @@ services:
       start_period: 30s
     environment:
       <<: *airflow-common-env
-      # Required to handle warm shutdown of the celery workers properly
-      # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
+      AIRFLOW__CORE__PARALLELISM: 128
+      AIRFLOW__CORE__DAG_CONCURRENCY: 32
+      AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 32
+      AIRFLOW__CELERY__WORKER_CONCURRENCY: 4
       DUMB_INIT_SETSID: "0"
     restart: always
     depends_on:
@@ -285,11 +287,26 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  selenium:
-    container_name: remote_chromedriver
-    image: seleniarm/standalone-chromium:latest
+
+  selenium-hub:
+    image: selenium/hub:4.21.0
+    container_name: selenium-hub
     ports:
       - "4444:4444"
+    environment:
+      - SE_GRID_MAX_SESSION=16
+      - SE_GRID_SESSION_TIMEOUT=300
+    restart: always
+
+  selenium-chrome:
+    image: selenium/node-chrome:4.21.0
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
     restart: always
 
 volumes:
