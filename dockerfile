@@ -1,4 +1,4 @@
-FROM apache/airflow:2.9.1
+FROM apache/airflow:2.9.1-python3.10
 
 # 시스템 패키지 설치 (pandas, lxml 빌드용)
 USER root

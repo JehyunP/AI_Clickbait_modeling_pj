@@ -1,16 +1,33 @@
-# --- Crawling ---
-requests
-beautifulsoup4
-selenium
+# =======================
+# Web Crawling
+# =======================
+selenium==4.19.0
+webdriver-manager==4.0.1
+beautifulsoup4==4.13.0
 
-# --- Data handling ---
-pandas
-numpy
+# =======================
+# Data Processing
+# =======================
+pandas==2.2.2
+numpy==1.26.4
+pyarrow==15.0.2
 
-# Embedding
-sentence-transformers
-transformers
-torch --index-url https://download.pytorch.org/whl/cpu
+# =======================
+# Utilities
+# =======================
+requests==2.31.0
+tqdm==4.66.2
+regex==2023.12.25
 
-# ML/DL
-tensorflow-cpu
+# =======================
+# NLP Embedding
+# =======================
+sentence-transformers==2.7.0
+transformers==4.37.0
+torch==2.2.1
+
+# ========================
+# ML / DL
+# ========================
+tensorflow==2.15.0
+keras==2.15.0

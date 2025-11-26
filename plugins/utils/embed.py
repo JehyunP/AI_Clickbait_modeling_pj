@@ -44,10 +44,7 @@ class NewsEmbedding:
 
 def process_json(data_list):
     """
-    JSON 파일을 읽어 임베딩 생성
-
-    Args:
-        data_list: JSON 파일
+    List 파일을 읽어 임베딩 생성
     """
 
     df = pd.DataFrame(data_list)
