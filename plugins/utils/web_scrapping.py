@@ -150,6 +150,10 @@ class WebScrapper:
         base_url = "https://www.yna.co.kr/news/{}"
         data_set = []
 
+        max_num = 21
+        if pg_num > max_num:
+            pg_num = max_num
+
         for page in range(1, pg_num):
             url = base_url.format(page)
             self.driver.get(url)
@@ -158,10 +162,8 @@ class WebScrapper:
             li_list = self.driver.find_elements(By.CSS_SELECTOR, 'li[data-cid]')
             
             for li in li_list:
-                cid_value = li.get_attribute('data-cid')
-                if cid_value and cid_value.startswith('AKR20251126'):
-                    web_id = cid_value.replace('AKR20251126', '').strip()
-                    article_url = 'https://www.yna.co.kr/view/AKR20251126' + web_id
+                a_tag = li.find_element(By.CSS_SELECTOR, 'a.tit-news')
+                article_url = a_tag.get_attribute("href")
 
                 # open new window with article page
                 self.driver.execute_script('window.open(arguments[0]);', article_url)
@@ -192,6 +194,147 @@ class WebScrapper:
 
                 data_set.append({
                     "News" : "연합뉴스",
+                    "Date" : date_text,
+                    "Category" : category,
+                    "Title" : title,
+                    "Contents" : contents
+                })
+
+
+                self.driver.close()
+                self.driver.switch_to.window(self.driver.window_handles[0])
+
+        self.driver.quit()
+
+        return data_set
+    
+
+
+
+
+    def get_donganews(self, pg_num = 2):
+        base_url = "https://www.donga.com/news/List?p={}1&prod=news&ymd=&m="
+
+        data_set = []
+
+        if pg_num != 2:
+            pg_num = pg_num * 20 + 1
+
+        for page in range(1, pg_num, 20):
+            url = base_url.format(page)
+            self.driver.get(url)
+            time.sleep(1)
+
+            # 기사 제목과 링크 추출
+    
+            li_list = self.driver.find_elements(By.CSS_SELECTOR, 'ul.row_list > li')
+            for li in li_list:
+                try:
+                    a_tag = li.find_element(By.CSS_SELECTOR, 'h4.tit > a')
+                    href = a_tag.get_attribute('href')
+                except:
+                    continue  # 해당 li는 건너뜀
+
+                # open new window with article page
+                self.driver.execute_script('window.open(arguments[0]);', href)
+                self.driver.switch_to.window(self.driver.window_handles[1])
+
+                article_soup = bs(self.driver.page_source, 'html.parser')
+
+                element = article_soup.select_one('#contents > header > div > section > nav > ol > li > a')
+                if element:
+                    category = element.get_text(strip=True)
+                else:
+                    category = ''
+
+                title = article_soup.select_one('#contents > header > div > section > h1').get_text(strip=True)
+                
+                date_element = article_soup.select_one('#contents > header > div > section > ul > li:nth-child(2) > button > span:nth-child(1)')
+                if date_element:
+                    date_text = date_element.get_text(strip=True).split()[0]
+                else:
+                    date_text = ''
+                date_text = date_text.replace("-", ".")
+
+                sentences = []
+
+                content = article_soup.select_one('#contents > div.view_body > div > div.main_view > section.news_view')
+                if content:
+                    text = content.get_text(separator=' ', strip=True)
+                    sentences.append(text)
+
+                contents = ' '.join(sentences)
+
+                data_set.append({
+                    "News" : "동아일보",
+                    "Date" : date_text,
+                    "Category" : category,
+                    "Title" : title,
+                    "Contents" : contents
+                })
+
+
+                self.driver.close()
+                self.driver.switch_to.window(self.driver.window_handles[0])
+
+        self.driver.quit()
+
+        return data_set
+    
+
+
+
+
+
+
+
+    def get_haninews(self, pg_num = 2):
+        base_url = "https://www.hani.co.kr/arti?page={}"
+
+        data_set = []
+
+        for page in range(1, pg_num, 20):
+            url = base_url.format(page)
+            self.driver.get(url)
+            time.sleep(1)
+
+            # 기사 제목과 링크 추출
+    
+            ul_elem = self.driver.find_element(By.CSS_SELECTOR, 'ul')
+            li_list = ul_elem.find_elements(By.TAG_NAME, 'li')
+            for li in li_list:
+                a_tag = li.find_element(By.CSS_SELECTOR, 'a')
+                href = a_tag.get_attribute('href')
+
+                # open new window with article page
+                self.driver.execute_script('window.open(arguments[0]);', href)
+                self.driver.switch_to.window(self.driver.window_handles[1])
+
+                article_soup = bs(self.driver.page_source, 'html.parser')
+
+                category = article_soup.select_one('#renewal2023 > div.ArticleDetailView_breadcrumb___UwRC > a:nth-child(1)').get_text(strip=True)
+
+                title = article_soup.select_one('#renewal2023 > h3').get_text(strip=True)
+                
+                date_element = article_soup.select_one('#renewal2023 ul.ArticleDetailView_dateList__tniXJ li span')
+                if date_element:
+                    date_text = date_element.get_text(strip=True).split()[0]
+                else:
+                    date_text = ''
+                date_text = date_text.replace("-", ".")
+
+                sentences = []
+
+                paragraphs = article_soup.select_one('#renewal2023 > div.article-text > p')
+                for p in paragraphs:
+                    text = p.get_text(strip=True)
+                    if text:  # 빈 텍스트는 제외
+                        sentences.append(text)
+
+                contents = ' '.join(sentences)
+
+                data_set.append({
+                    "News" : "한겨례",
                     "Date" : date_text,
                     "Category" : category,
                     "Title" : title,

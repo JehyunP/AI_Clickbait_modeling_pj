@@ -41,7 +41,7 @@ class SnowFlakeLoader:
                 contents STRING,
                 title_embedding VARIANT,
                 content_embedding VARIANT,
-                evaluate_probability FLOAT,
+                probability FLOAT,
                 evaluate INT
             );
         """
@@ -61,7 +61,7 @@ class SnowFlakeLoader:
                     $1:Contents::string   AS contents,
                     $1:title_embedding    AS title_embedding,
                     $1:content_embedding  AS content_embedding,
-                    $1:evaluate_probability::float AS evaluate_probability,
+                    $1:probability::float AS probability,
                     $1:evaluate::int      AS evaluate
                 FROM @news_stage/{self.year}/{self.month}/{self.day}.parquet
             ) s
@@ -70,12 +70,12 @@ class SnowFlakeLoader:
                 INSERT (
                     news, date, category, title, contents,
                     title_embedding, content_embedding,
-                    evaluate_probability, evaluate
+                    probability, evaluate
                 )
                 VALUES (
                     s.news, s.date, s.category, s.title, s.contents,
                     s.title_embedding, s.content_embedding,
-                    s.evaluate_probability, s.evaluate
+                    s.probability, s.evaluate
                 );
         """
         self.hook.run(sql)
